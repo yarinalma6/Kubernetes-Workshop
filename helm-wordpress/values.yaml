@@ -1,0 +1,9 @@
+ingress:
+  host: "yarin.107.22.134.50.nip.io"
+
+wordpress:
+  secretName: "mariadb-pass"
+
+mariadb:
+  image: "992382545251.dkr.ecr.us-east-1.amazonaws.com/yarin-mariadb:10.6.4-focal"
+  storage: "1Gi"
