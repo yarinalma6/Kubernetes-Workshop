@@ -1,49 +1,76 @@
-# Kubernetes-Workshop
 # Kubernetes Migration Project: WordPress and MariaDB
 
-This repository demonstrates the end-to-end migration of a WordPress application from a local Docker-Compose environment to a production-ready Kubernetes cluster using Helm.
+This repository contains the complete migration process of a WordPress application from a Docker-Compose environment to a production-ready Kubernetes cluster using Helm.
+
+---
+
+## Project Overview
+
+The goal of this project is to demonstrate cloud-native deployment practices, including high availability, persistent storage, automated scaling, and comprehensive monitoring.
+
+---
 
 ## DevOps Toolchain and Prerequisites
-The following tools were utilized to build and deploy this environment:
+
+The following tools were utilized to build, deploy, and manage the environment:
+
 * **Minikube**: Local Kubernetes cluster environment.
-* **kubectl**: Kubernetes command-line interface.
-* **Helm v3**: Package manager for Kubernetes applications.
+* **kubectl**: Kubernetes command-line interface for cluster management.
+* **Helm v3**: Package manager for defining and deploying Kubernetes applications.
 * **AWS CLI**: Used for authentication and managing container images within Amazon ECR.
-* **NGINX Ingress Controller**: Utilized for advanced traffic routing and host-based access.
+* **NGINX Ingress Controller**: Utilized for L7 traffic routing and host-based access.
+
+---
 
 ## Architecture and Design Decisions
-* **High Availability**: The WordPress application is deployed with a minimum of 2 replicas to ensure service continuity and load distribution.
-* **Persistence (StatefulSet)**: MariaDB is implemented as a StatefulSet with volumeClaimTemplates. This ensures that database identity and data persist across pod restarts or rescheduling, separating the storage lifecycle from the pod lifecycle.
-* **Service Discovery**: Internal communication between WordPress and the database is handled via Kubernetes internal DNS, using Service names to ensure reliable connectivity.
-* **Security**: Sensitive information, such as database credentials, is managed through Kubernetes Secrets rather than being hardcoded in the manifests.
+
+* **High Availability**: WordPress is deployed with **2 replicas** to ensure service continuity and load distribution across the cluster.
+* **Persistence (StatefulSet)**: MariaDB is implemented as a **StatefulSet** with `volumeClaimTemplates`. This ensures that database identity and data persist across pod restarts, effectively separating the storage lifecycle from the pod lifecycle.
+* **Service Discovery**: Internal communication is handled via Kubernetes internal DNS. WordPress connects to the database using the Service name (`mariadb`), ensuring reliable connectivity regardless of pod IP changes.
+* **Security**: Sensitive data, including database credentials, is managed via **Kubernetes Secrets** to avoid hardcoding plain-text passwords in manifests.
+
+---
 
 ## Repository Structure
-* **/my_wordpress**: Contains the original Docker-Compose configuration and environment files.
-* **/raw-yamls**: Contains the initial, static Kubernetes manifests used during the first phase of migration.
-* **/helm-wordpress**: The final, parameterized Helm Chart designed for production-grade deployments.
-* **/monitoring**: Contains the exported Grafana dashboard JSON model.
+
+* **/my_wordpress**: Original Docker-Compose configuration and environment files.
+* **/raw-yamls**: Initial static Kubernetes manifests used during the first migration phase.
+* **/helm-wordpress**: The final, parameterized Helm Chart designed for production deployments.
+* **/monitoring**: Contains the exported Grafana dashboard JSON model for the uptime panel.
+
+---
 
 ## Installation and Deployment
-1. **Prepare the Environment**:
-   Ensure Minikube is running and the Ingress addon is enabled:
-   ```bash
-   minikube start
-   minikube addons enable ingress
-Configure Host Resolution: Map the Minikube IP to the local domain by adding the following entry to your /etc/hosts file:
 
-Plaintext
+### 1. Prepare the Environment
+Ensure Minikube is running and the Ingress addon is enabled:
+
+```bash
+minikube start
+minikube addons enable ingress
+```
+
+### 2. Configure Host Resolution
+Map the Minikube IP to the local domain by adding the following entry to your `/etc/hosts` file:
+
+```text
 [minikube-ip] wordpress.local
-Deploy via Helm: Run the following command to install the application in a dedicated namespace:
+```
 
-Bash
+### 3. Deploy via Helm
+Install the application in a dedicated namespace using the Helm Chart:
+
+```bash
 helm install my-release ./helm-wordpress -n helm-wordpress --create-namespace
-Monitoring and Observability
-A comprehensive monitoring stack consisting of Prometheus and Grafana was deployed to track application health.
+```
 
-Metrics Collection: Utilizes kube-state-metrics to monitor the status of cluster objects.
+---
 
-Key Metric: The kube_pod_container_status_running metric is used to track the real-time availability of the WordPress and MariaDB containers.
+## Monitoring and Observability
 
-Visualization: A custom State Timeline dashboard was created in Grafana to visualize uptime and service stability over time.
+A comprehensive monitoring stack (Prometheus & Grafana) tracks the application's health and availability.
 
-Persistence: The dashboard is stored as a JSON model in the /monitoring directory, following the "Dashboard as Code" principle for easy restoration.
+* **Metrics Collection**: Utilizes `kube-state-metrics` to monitor the real-time status of cluster objects.
+* **Key Metric**: The `kube_pod_container_status_running` metric is used to verify the operational status of WordPress and MariaDB.
+* **Visualization**: A custom State Timeline dashboard provides a visual history of uptime and service stability.
+* **Dashboard as Code**: The dashboard is exported as a JSON model in the `/monitoring` directory to allow for consistent restoration and version control.
