@@ -1,44 +1,41 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mariadb
-  labels:
-    app: mariadb
+  name: {{ .Values.mariadb.app }}
 spec:
   ports:
   - port: 3306
-    name: mysql
+    name: web
   clusterIP: None 
   selector:
-    app: mariadb
- 
+    app: {{ .Values.mariadb.app }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mariadb
 spec:
-  serviceName: "mariadb" 
+  serviceName: {{ .Values.mariadb.app }}
   replicas: 1
   selector:
     matchLabels:
-      app: mariadb
+      app: {{ .Values.mariadb.app }}
   template:
     metadata:
       labels:
-        app: mariadb
+        app: {{ .Values.mariadb.app }}
     spec:
       imagePullSecrets:
       - name: ecr-registry-key
       containers:
-      - name: mariadb
-        image: 992382545251.dkr.ecr.us-east-1.amazonaws.com/yarin-mariadb:10.6.4-focal
+      - name: {{ .Values.mariadb.app }}
+        image: {{ .Values.mariadb.image }}
         env:
         - name: MARIADB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mariadb-pass
-              key: password.txt
+              name: {{ .Release.Name }}-app-secret
+              key: password
         - name: MARIADB_DATABASE
           value: yarin_db
         ports:
@@ -54,4 +51,5 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ .Values.mariadb.storage }}
+

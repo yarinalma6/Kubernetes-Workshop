@@ -1,18 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: wordpress-ingress
+  name: {{ .Values.wordpress.app }}-ingress
   annotations:
-    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: yarin.54.158.181.74.nip.io
+  - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: /
+      - path: {{ .Values.ingress.path }}
         pathType: Prefix
         backend:
           service:
-            name: wordpress   
+            name: {{ .Values.wordpress.app }}
             port:
-              number: 80    
+              number: {{ .Values.wordpress.port }}

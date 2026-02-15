@@ -1,9 +1,18 @@
-ingress:
-  host: "yarin.107.22.134.50.nip.io"
+mariadb:
+  image: 992382545251.dkr.ecr.us-east-1.amazonaws.com/yarin-mariadb:10.6.4-focal
+  app: mariadb
+  storage: 1Gi
+  dbPassword: yarin123
+  dbUsername: yarin
 
 wordpress:
-  secretName: "mariadb-pass"
+  replicaCount: 2
+  app: wordpress
+  image: 992382545251.dkr.ecr.us-east-1.amazonaws.com/yarin-wordpress:latest
+  port: 80
+  dbhost: mariadb
 
-mariadb:
-  image: "992382545251.dkr.ecr.us-east-1.amazonaws.com/yarin-mariadb:10.6.4-focal"
-  storage: "1Gi"
+ingress:
+  enabled: true
+  host: wordpress.local
+  path: /
